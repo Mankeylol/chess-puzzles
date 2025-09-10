@@ -14,6 +14,7 @@ export default function Board() {
     const [solution, setSolution] = useState<string[]>([]);
     const [optionSquares, setOptionSquares] = useState({});
     const [boardOrientation, setBoardOrientation] = useState<'white' | 'black'>('white');
+    const showAnimations = false;
     
 
 
@@ -39,6 +40,7 @@ export default function Board() {
     moveFrom,
     optionSquares,
     boardOrientation,
+    showAnimations,
   };
 
   function getMoveOptions( square: Square){
