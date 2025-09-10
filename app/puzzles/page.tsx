@@ -93,7 +93,7 @@ export default function PuzzlesPage() {
           </div>
 
           {/* ✅ Chess board */}
-          <div className="w-full max-w-[70vmin] aspect-square">
+          <div className="w-full max-w-[80vmin] aspect-square">
             <Board />
           </div>
         </>
