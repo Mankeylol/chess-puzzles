@@ -8,7 +8,7 @@ import { Square } from 'chess.js';
 
 
 
-export default function Board() {
+export default function Board({onPuzzleSolved}: {onPuzzleSolved: () => void}) {
     const [game, setGame] = useState(new Chess());
     const [moveFrom, setMoveFrom] = useState('');
     const [solution, setSolution] = useState<string[]>([]);
@@ -114,7 +114,8 @@ export default function Board() {
         setGame(newGame); // update board
 
         if (updatedSolution.length === 0) {
-            fetchPuzzle(); // load next puzzle
+          onPuzzleSolved?.();
+          fetchPuzzle(); // load next puzzle
         }
         return true;
       }

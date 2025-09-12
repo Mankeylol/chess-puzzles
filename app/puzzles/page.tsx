@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import Board from "../components/Chessboard";
 import { useRouter } from "next/navigation";
+import { useMiniKit } from "@coinbase/onchainkit/minikit";
 
 export default function PuzzlesPage() {
   const [timeLeft, setTimeLeft] = useState(60);
@@ -10,8 +11,31 @@ export default function PuzzlesPage() {
   const [gameStarted, setGameStarted] = useState(false);
   const [solvedCount, setSolvedCount] = useState(0);
   const [gameOver, setGameOver] = useState(false);
-
+  const [hasPosted, setHasPosted] = useState(false); // ✅ Prevent duplicate submissions
+  const { context } = useMiniKit();
   const router = useRouter();
+
+  const fid = context?.user?.fid;
+
+
+
+  // ✅ POST score to backend when game ends
+  async function postFinalScore() {
+    try {
+      const res = await fetch("/api/data", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ fid: fid, scoreToAdd: solvedCount }),
+      });
+
+      if (!res.ok) throw new Error("Failed to update score");
+
+      const data = await res.json();
+      console.log("✅ Score updated:", data.totalScore);
+    } catch (err) {
+      console.error("Error posting score:", err);
+    }
+  }
 
   // Timer countdown logic
   useEffect(() => {
@@ -20,7 +44,7 @@ export default function PuzzlesPage() {
       setTimeLeft((prev) => {
         if (prev <= 1) {
           clearInterval(interval);
-          setGameOver(true); // game ends when timer hits 0
+          setGameOver(true);
           setGameStarted(false);
         }
         return prev - 1;
@@ -28,6 +52,14 @@ export default function PuzzlesPage() {
     }, 1000);
     return () => clearInterval(interval);
   }, [timeLeft, gameStarted]);
+
+  // ✅ When gameOver flips to true, post score once
+  useEffect(() => {
+    if (gameOver && !hasPosted) {
+      postFinalScore();
+      setHasPosted(true);
+    }
+  }, [gameOver, hasPosted]);
 
   // Pre-game countdown logic
   useEffect(() => {
@@ -41,8 +73,6 @@ export default function PuzzlesPage() {
 
   function handlePuzzleSolved() {
     setSolvedCount((prev) => prev + 1);
-    // TODO: load next puzzle logic
-    setTimeLeft(60); // optional: reset timer per puzzle if you want each puzzle to have full time
   }
 
   function handlePlayAgain() {
@@ -50,19 +80,20 @@ export default function PuzzlesPage() {
     setTimeLeft(60);
     setCountdown(3);
     setGameOver(false);
+    setHasPosted(false); // ✅ Reset so we can post again next round
     setGameStarted(false);
   }
 
   return (
     <div className="relative flex flex-col items-center justify-center min-h-screen">
       {!gameStarted && !gameOver ? (
-        // Pre-game countdown
         <div className="text-6xl font-bold animate-pulse">{countdown}</div>
       ) : gameOver ? (
-        // Game over screen
         <div className="flex flex-col items-center justify-center gap-6">
           <h1 className="text-3xl font-bold">⏳ Time’s Up!</h1>
-          <p className="text-xl">You solved <span className="font-bold">{solvedCount}</span> puzzles!</p>
+          <p className="text-xl">
+            You solved <span className="font-bold">{solvedCount}</span> puzzles!
+          </p>
           <div className="flex gap-4">
             <button
               onClick={handlePlayAgain}
@@ -94,7 +125,7 @@ export default function PuzzlesPage() {
 
           {/* ✅ Chess board */}
           <div className="w-full max-w-[80vmin] aspect-square">
-            <Board />
+            <Board onPuzzleSolved={handlePuzzleSolved} />
           </div>
         </>
       )}

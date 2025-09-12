@@ -23,6 +23,8 @@ export default function App() {
     }
   }, [setFrameReady, isFrameReady]);
   const username = context?.user?.username;
+  const fid = context?.user?.fid;
+
 
 
 
