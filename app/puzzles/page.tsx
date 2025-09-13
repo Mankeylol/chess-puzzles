@@ -1,9 +1,16 @@
+// PuzzlesPage.tsx
 "use client";
 
 import { useEffect, useState } from "react";
 import Board from "../components/Chessboard";
 import { useRouter } from "next/navigation";
 import { useMiniKit } from "@coinbase/onchainkit/minikit";
+import { Timer, CheckCheck } from "lucide-react";
+
+type Puzzle = {
+  pgn: string;
+  solution: string[];
+};
 
 export default function PuzzlesPage() {
   const [timeLeft, setTimeLeft] = useState(60);
@@ -11,15 +18,47 @@ export default function PuzzlesPage() {
   const [gameStarted, setGameStarted] = useState(false);
   const [solvedCount, setSolvedCount] = useState(0);
   const [gameOver, setGameOver] = useState(false);
-  const [hasPosted, setHasPosted] = useState(false); // ✅ Prevent duplicate submissions
+  const [hasPosted, setHasPosted] = useState(false);
+  const [currentPuzzle, setCurrentPuzzle] = useState<Puzzle | null>(null);
+  const [nextPuzzle, setNextPuzzle] = useState<Puzzle | null>(null);
+
   const { context } = useMiniKit();
   const router = useRouter();
+  const fid = "123"; // context?.user?.fid;
 
-  const fid = context?.user?.fid;
+  async function fetchPuzzle(): Promise<Puzzle> {
+    const res = await fetch(`/api/getPuzzles?difficulty=easiest`);
+    return res.json();
+  }
 
+  useEffect(() => {
+    // Preload first two puzzles before game starts
+    fetchPuzzle().then(setCurrentPuzzle);
+    fetchPuzzle().then(setNextPuzzle);
+  }, []);
 
+  useEffect(() => {
+    if (!gameStarted || timeLeft <= 0) return;
+    const interval = setInterval(() => {
+      setTimeLeft((prev) => {
+        if (prev <= 1) {
+          clearInterval(interval);
+          setGameOver(true);
+          setGameStarted(false);
+        }
+        return prev - 1;
+      });
+    }, 1000);
+    return () => clearInterval(interval);
+  }, [timeLeft, gameStarted]);
 
-  // ✅ POST score to backend when game ends
+  useEffect(() => {
+    if (gameOver && !hasPosted) {
+      postFinalScore();
+      setHasPosted(true);
+    }
+  }, [gameOver, hasPosted]);
+
   async function postFinalScore() {
     try {
       const res = await fetch("/api/data", {
@@ -37,31 +76,23 @@ export default function PuzzlesPage() {
     }
   }
 
-  // Timer countdown logic
-  useEffect(() => {
-    if (!gameStarted || timeLeft <= 0) return;
-    const interval = setInterval(() => {
-      setTimeLeft((prev) => {
-        if (prev <= 1) {
-          clearInterval(interval);
-          setGameOver(true);
-          setGameStarted(false);
-        }
-        return prev - 1;
-      });
-    }, 1000);
-    return () => clearInterval(interval);
-  }, [timeLeft, gameStarted]);
+  function handlePuzzleSolved() {
+    setSolvedCount((prev) => prev + 1);
 
-  // ✅ When gameOver flips to true, post score once
-  useEffect(() => {
-    if (gameOver && !hasPosted) {
-      postFinalScore();
-      setHasPosted(true);
-    }
-  }, [gameOver, hasPosted]);
+    // Swap nextPuzzle → currentPuzzle, then preload a new nextPuzzle
+    setCurrentPuzzle(nextPuzzle);
+    fetchPuzzle().then(setNextPuzzle);
+  }
 
-  // Pre-game countdown logic
+  function handlePlayAgain() {
+    setSolvedCount(0);
+    setTimeLeft(60);
+    setCountdown(3);
+    setGameOver(false);
+    setHasPosted(false);
+    setGameStarted(false);
+  }
+
   useEffect(() => {
     if (countdown > 0) {
       const timer = setTimeout(() => setCountdown((c) => c - 1), 1000);
@@ -70,19 +101,6 @@ export default function PuzzlesPage() {
       setGameStarted(true);
     }
   }, [countdown]);
-
-  function handlePuzzleSolved() {
-    setSolvedCount((prev) => prev + 1);
-  }
-
-  function handlePlayAgain() {
-    setSolvedCount(0);
-    setTimeLeft(60);
-    setCountdown(3);
-    setGameOver(false);
-    setHasPosted(false); // ✅ Reset so we can post again next round
-    setGameStarted(false);
-  }
 
   return (
     <div className="relative flex flex-col items-center justify-center min-h-screen">
@@ -109,25 +127,27 @@ export default function PuzzlesPage() {
             </button>
           </div>
         </div>
-      ) : (
+      ) : currentPuzzle ? (
         <>
-          {/* ✅ Timer + solved count bar */}
           <div className="absolute top-4 left-4 flex items-center gap-6 bg-black/60 text-white px-4 py-2 rounded-lg shadow-md">
             <span
               className={`font-mono text-lg ${
                 timeLeft <= 10 ? "text-red-400 animate-pulse" : ""
               }`}
             >
-              ⏳ {timeLeft}s
+              <Timer size={20} /> {timeLeft}s
             </span>
-            <span className="font-mono text-lg">✅ {solvedCount}</span>
+            <span className="font-mono text-lg">
+              <CheckCheck size={20} /> {solvedCount}
+            </span>
           </div>
 
-          {/* ✅ Chess board */}
           <div className="w-full max-w-[80vmin] aspect-square">
-            <Board onPuzzleSolved={handlePuzzleSolved} />
+            <Board puzzle={currentPuzzle} onPuzzleSolved={handlePuzzleSolved} />
           </div>
         </>
+      ) : (
+        <div className="text-xl">Loading puzzle...</div>
       )}
     </div>
   );

@@ -1,81 +1,75 @@
-"use client"
+// Board.tsx
+"use client";
 
-import { Chessboard } from 'react-chessboard';
-import { useEffect, useState } from 'react';
-import { Chess } from 'chess.js';
-import type { PieceDropHandlerArgs, SquareHandlerArgs, } from "react-chessboard"; 
-import { Square } from 'chess.js';
+import { Chessboard } from "react-chessboard";
+import { useEffect, useState } from "react";
+import { Chess, Square } from "chess.js";
+import type {
+  PieceDropHandlerArgs,
+  SquareHandlerArgs,
+} from "react-chessboard";
 
+type Puzzle = {
+  pgn: string;
+  solution: string[];
+};
 
+export default function Board({
+  puzzle,
+  onPuzzleSolved,
+}: {
+  puzzle: Puzzle | null;
+  onPuzzleSolved: () => void;
+}) {
+  const [game, setGame] = useState(new Chess());
+  const [moveFrom, setMoveFrom] = useState("");
+  const [solution, setSolution] = useState<string[]>([]);
+  const [optionSquares, setOptionSquares] = useState({});
+  const [boardOrientation, setBoardOrientation] = useState<"white" | "black">(
+    "white"
+  );
 
-export default function Board({onPuzzleSolved}: {onPuzzleSolved: () => void}) {
-    const [game, setGame] = useState(new Chess());
-    const [moveFrom, setMoveFrom] = useState('');
-    const [solution, setSolution] = useState<string[]>([]);
-    const [optionSquares, setOptionSquares] = useState({});
-    const [boardOrientation, setBoardOrientation] = useState<'white' | 'black'>('white');
-    const showAnimations = false;
-    
+  const showAnimations = false;
+  const darkSquareStyle = { backgroundColor: "#739552" };
+  const lightSquareStyle = { backgroundColor: "#ebecd0" };
 
+  /** ✅ When puzzle prop changes, load it into board */
+  useEffect(() => {
+    if (!puzzle) return;
 
-    const fetchPuzzle = async () => {
-      const response = await fetch(`/api/getPuzzles?difficulty=easiest`);
-      const data = await response.json();
+    const newGame = new Chess();
+    newGame.loadPgn(puzzle.pgn);
 
-      
-      game.loadPgn(data.pgn);
-      setGame(game);
-      setBoardOrientation(game.turn() === 'w' ? 'white' : 'black');
-      setSolution(data.solution);
-  };
+    setGame(newGame);
+    setBoardOrientation(newGame.turn() === "w" ? "white" : "black");
+    setSolution(puzzle.solution);
+    setMoveFrom("");
+    setOptionSquares({});
+  }, [puzzle]);
 
-    useEffect(() => {
-        fetchPuzzle();
-    }, []);
-  const chessboardOptions = {
-    // your config options here
-    position: game.fen(),
-    onPieceDrop,
-    onSquareClick,
-    moveFrom,
-    optionSquares,
-    boardOrientation,
-    showAnimations,
-  };
-
-  function getMoveOptions( square: Square){
-    const moves = game.moves({
-      square,
-      verbose: true
-    });
+  function getMoveOptions(square: Square) {
+    const moves = game.moves({ square, verbose: true });
     if (moves.length === 0) {
       setOptionSquares({});
       return false;
     }
     const newSquares: Record<string, React.CSSProperties> = {};
 
-      // loop through the moves and set the option squares
-      for (const move of moves) {
-        newSquares[move.to] = {
-          background: game.get(move.to) && game.get(move.to)?.color !== game.get(square)?.color ? 'radial-gradient(circle, rgba(0,0,0,.1) 85%, transparent 85%)' // larger circle for capturing
-          : 'radial-gradient(circle, rgba(0,0,0,.1) 25%, transparent 25%)',
-          // smaller circle for moving
-          borderRadius: '50%'
-        };
-      }
-      newSquares[square] = {
-        background: 'rgba(255, 255, 0, 0.4)'
+    for (const move of moves) {
+      newSquares[move.to] = {
+        background:
+          game.get(move.to) && game.get(move.to)?.color !== game.get(square)?.color
+            ? "radial-gradient(circle, rgba(0,0,0,.1) 85%, transparent 85%)"
+            : "radial-gradient(circle, rgba(0,0,0,.1) 25%, transparent 25%)",
+        borderRadius: "50%",
       };
-
-      setOptionSquares(newSquares);
-      return true;
+    }
+    newSquares[square] = { background: "rgba(255, 255, 0, 0.4)" };
+    setOptionSquares(newSquares);
+    return true;
   }
 
-  function onPieceDrop({
-    sourceSquare,
-    targetSquare,
-  }: PieceDropHandlerArgs) {
-
+  function onPieceDrop({ sourceSquare, targetSquare }: PieceDropHandlerArgs) {
     if (!targetSquare) return false;
 
     const prevFen = game.fen();
@@ -87,93 +81,70 @@ export default function Board({onPuzzleSolved}: {onPuzzleSolved: () => void}) {
       promotion: "q",
     });
 
-    if (move === null) {
-      return false;
-    }
+    if (move === null) return false;
 
+    const moveStr = move.from + move.to + (move.promotion ? move.promotion : "");
+    if (solution.length > 0 && moveStr === solution[0]) {
+      let updatedSolution = solution.slice(1);
 
-      const moveStr = move.from + move.to + (move.promotion ? move.promotion : "");
-      if (solution.length > 0 && moveStr === solution[0]) {
-        // ✅ correct move
-        let updatedSolution = solution.slice(1); // remove player's move
-    
-        // check if opponent move exists
-        if (updatedSolution.length > 0) {
-          const opponentMoveStr = updatedSolution[0];
-          const from = opponentMoveStr.slice(0, 2);
-          const to = opponentMoveStr.slice(2, 4);
-          const promotion = opponentMoveStr.length > 4 ? opponentMoveStr[4] : undefined;
-    
-          const opponentMove = newGame.move({ from, to, promotion });
-          if (opponentMove !== null) {
-            updatedSolution = updatedSolution.slice(1); // remove opponent's move
-          }
-        }
-    
-        setSolution(updatedSolution);
-        setGame(newGame); // update board
+      if (updatedSolution.length > 0) {
+        const opponentMoveStr = updatedSolution[0];
+        const from = opponentMoveStr.slice(0, 2);
+        const to = opponentMoveStr.slice(2, 4);
+        const promotion =
+          opponentMoveStr.length > 4 ? opponentMoveStr[4] : undefined;
 
-        if (updatedSolution.length === 0) {
-          onPuzzleSolved?.();
-          fetchPuzzle(); // load next puzzle
-        }
-        return true;
+        const opponentMove = newGame.move({ from, to, promotion });
+        if (opponentMove) updatedSolution = updatedSolution.slice(1);
       }
 
-   else {
-      // ❌ incorrect move → revert
-      const resetGame = new Chess(prevFen);
-    setGame(resetGame);
-    return false;
+      setSolution(updatedSolution);
+      setGame(newGame);
+
+      if (updatedSolution.length === 0) {
+        onPuzzleSolved();
+      }
+      return true;
     }
-  
+
+    // ❌ Wrong move → revert
+    setGame(new Chess(prevFen));
+    return false;
   }
 
-  function onSquareClick({
-    square,
-    piece
-  }: SquareHandlerArgs) {
+  function onSquareClick({ square, piece }: SquareHandlerArgs) {
     if (!moveFrom && piece) {
-      // get the move options for the square
       const hasMoveOptions = getMoveOptions(square as Square);
-
-      // if move options, set the moveFrom to the square
-      if (hasMoveOptions) {
-        setMoveFrom(square);
-      }
-
-      // return early
+      if (hasMoveOptions) setMoveFrom(square);
       return;
     }
-    const moves = game.moves({
-      square: moveFrom as Square,
-      verbose: true
-    });
-    const foundMove = moves.find(m => m.from === moveFrom && m.to === square);
+
+    const moves = game.moves({ square: moveFrom as Square, verbose: true });
+    const foundMove = moves.find((m) => m.from === moveFrom && m.to === square);
 
     if (!foundMove) {
       const hasMoveOptions = getMoveOptions(square as Square);
-
-        // if new piece, setMoveFrom, otherwise clear moveFrom
-        setMoveFrom(hasMoveOptions ? square : '');
-
-        // return early
-        return;
+      setMoveFrom(hasMoveOptions ? square : "");
+      return;
     }
 
-    const move = game.move(foundMove);
-    if (move === null) {
-      return false;
-    }
-
-    setGame(new Chess(game.fen())); // trigger re-render with new state
-    setMoveFrom('');
+    game.move(foundMove);
+    setGame(new Chess(game.fen()));
+    setMoveFrom("");
     return true;
   }
 
+  const chessboardOptions = {
+    position: game.fen(),
+    onPieceDrop,
+    onSquareClick,
+    moveFrom,
+    optionSquares,
+    boardOrientation,
+    showAnimations,
+    darkSquareStyle,
+    lightSquareStyle,
+  };
 
-
-  return (
-    <Chessboard options={chessboardOptions} />
-  )
+  return <Chessboard options={chessboardOptions} />;
 }

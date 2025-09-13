@@ -1,11 +1,8 @@
 import { NextResponse } from "next/server";
-import dbConnect from "@/lib/mongo"; // your dbConnect file
-import UserScore from "@/app/models/UserScore";
+import prisma from "@/lib/prisma";
 
 export async function GET(req: Request) {
   try {
-    await dbConnect();
-
     const { searchParams } = new URL(req.url);
     const fid = searchParams.get("fid");
 
@@ -13,7 +10,7 @@ export async function GET(req: Request) {
       return NextResponse.json({ error: "Missing fid" }, { status: 400 });
     }
 
-    const userScore = await UserScore.findOne({ fid });
+    const userScore = await prisma.userScore.findUnique({ where: { fid } });
 
     return NextResponse.json({
       fid,
@@ -27,27 +24,50 @@ export async function GET(req: Request) {
 
 export async function POST(req: Request) {
   try {
-    await dbConnect();
     const { fid, scoreToAdd } = await req.json();
 
     if (!fid || typeof scoreToAdd !== "number") {
-      return NextResponse.json({ error: "Missing fid or scoreToAdd" }, { status: 400 });
+      return NextResponse.json(
+        { error: "Missing fid or scoreToAdd" },
+        { status: 400 }
+      );
     }
 
-    // Find existing user or create new one
-    const updatedUser = await UserScore.findOneAndUpdate(
-      { fid },
-      { $inc: { score: scoreToAdd } }, // increment score
-      { upsert: true, new: true } // create if doesn't exist, return updated doc
-    );
+    const existingUser = await prisma.userScore.findUnique({
+      where: { fid },
+    });
+
+    // ✅ Use Prisma's upsert API properly
+    const updatedUser = await prisma.userScore.upsert({
+      where: { fid },
+      update: {
+        score: { increment: scoreToAdd }, // ✅ Prisma's way to $inc
+        highScore: {
+          set: scoreToAdd > (existingUser?.highScore ?? 0)
+            ? scoreToAdd
+            : undefined,
+        },
+      },
+      
+      create: {
+        fid,
+        score: scoreToAdd,
+        highScore: scoreToAdd,
+      },
+    });
 
     return NextResponse.json({
       success: true,
       fid,
       totalScore: updatedUser.score,
-    });
+      highScore: updatedUser.highScore,
+        });
   } catch (error) {
     console.error("Error updating user score:", error);
-    return NextResponse.json({ error: "Failed to update user score" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Failed to update user score" },
+      { status: 500 }
+    );
   }
 }
+
