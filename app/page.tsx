@@ -7,7 +7,6 @@ import {
 } from "@coinbase/onchainkit/minikit";
 import { useEffect, useState } from "react";
 import Navbar from "./components/navbar";
-import Board from "./components/Chessboard";
 import { useRouter } from "next/navigation";
 
 export default function App() {
@@ -23,7 +22,7 @@ export default function App() {
     }
   }, [setFrameReady, isFrameReady]);
   const username = context?.user?.username;
-  const fid = context?.user?.fid;
+  const fid = context?.user?.fid?.toString();
 
 
   const [score, setScore] = useState(0);
@@ -35,7 +34,12 @@ export default function App() {
     setScore(data.score);
   };
 
-  getUserScore("123");
+  useEffect(() => {
+    if (fid) {
+      getUserScore(fid);
+    }
+  }, [fid]);
+  
  
 
   return (

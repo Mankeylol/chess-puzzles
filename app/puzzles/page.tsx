@@ -27,7 +27,7 @@ export default function PuzzlesPage() {
 
   const { context } = useMiniKit();
   const router = useRouter();
-  const fid = "123"; // context?.user?.fid;
+  const fid = context?.user?.fid?.toString();
 
   
 
