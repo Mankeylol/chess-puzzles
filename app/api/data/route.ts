@@ -18,7 +18,10 @@ export async function GET(req: Request) {
     });
   } catch (error) {
     console.error("Error fetching user score:", error);
-    return NextResponse.json({ error: "Failed to fetch user score" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Failed to fetch user score" },
+      { status: 500 }
+    );
   }
 }
 
@@ -37,18 +40,17 @@ export async function POST(req: Request) {
       where: { fid },
     });
 
-    // ✅ Use Prisma's upsert API properly
+    const shouldUpdateHighScore =
+      scoreToAdd > (existingUser?.highScore ?? 0);
+
     const updatedUser = await prisma.userScore.upsert({
       where: { fid },
       update: {
-        score: { increment: scoreToAdd }, // ✅ Prisma's way to $inc
-        highScore: {
-          set: scoreToAdd > (existingUser?.highScore ?? 0)
-            ? scoreToAdd
-            : undefined,
-        },
+        score: { increment: scoreToAdd },
+        ...(shouldUpdateHighScore && {
+          highScore: { set: scoreToAdd },
+        }),
       },
-      
       create: {
         fid,
         score: scoreToAdd,
@@ -61,7 +63,7 @@ export async function POST(req: Request) {
       fid,
       totalScore: updatedUser.score,
       highScore: updatedUser.highScore,
-        });
+    });
   } catch (error) {
     console.error("Error updating user score:", error);
     return NextResponse.json(
@@ -70,4 +72,3 @@ export async function POST(req: Request) {
     );
   }
 }
-

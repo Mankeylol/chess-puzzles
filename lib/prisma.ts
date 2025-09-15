@@ -9,4 +9,8 @@ const globalforPrisma = global as unknown as {
   prisma: typeof prisma;
 };
 
+if (!globalforPrisma.prisma) {
+  globalforPrisma.prisma = prisma;
+}
+
 export default prisma;

@@ -1,4 +1,3 @@
-// Board.tsx
 "use client";
 
 import { Chessboard } from "react-chessboard";
@@ -13,6 +12,10 @@ type Puzzle = {
   pgn: string;
   solution: string[];
 };
+
+const moveSound = typeof Audio !== "undefined" ? new Audio("/sounds/move-self.mp3") : null;
+const captureSound = typeof Audio !== "undefined" ? new Audio("/sounds/capture.mp3") : null;
+
 
 export default function Board({
   puzzle,
@@ -33,7 +36,6 @@ export default function Board({
   const darkSquareStyle = { backgroundColor: "#739552" };
   const lightSquareStyle = { backgroundColor: "#ebecd0" };
 
-  /** ✅ When puzzle prop changes, load it into board */
   useEffect(() => {
     if (!puzzle) return;
 
@@ -70,47 +72,76 @@ export default function Board({
   }
 
   function onPieceDrop({ sourceSquare, targetSquare }: PieceDropHandlerArgs) {
-    if (!targetSquare) return false;
-
+    if (!targetSquare || sourceSquare === targetSquare) return false;
+  
     const prevFen = game.fen();
     const newGame = new Chess(prevFen);
-
+  
+    const legalMoves = newGame.moves({ verbose: true });
+    const isLegal = legalMoves.find(
+      (m) => m.from === sourceSquare && m.to === targetSquare
+    );
+  
+    if (!isLegal) return false;
+  
     const move = newGame.move({
       from: sourceSquare,
       to: targetSquare,
       promotion: "q",
     });
-
-    if (move === null) return false;
-
-    const moveStr = move.from + move.to + (move.promotion ? move.promotion : "");
+  
+    if (!move) return false;
+  
+    const moveStr = move.from + move.to + (move.promotion ?? "");
+  
+    // Only play sound if it's the correct puzzle move
     if (solution.length > 0 && moveStr === solution[0]) {
+      if (move.captured) {
+        captureSound?.play();
+      } else {
+        moveSound?.play();
+      }
+  
       let updatedSolution = solution.slice(1);
-
+      setGame(newGame);
+      setSolution(updatedSolution);
+  
+      // Handle opponent move after 2-second delay
       if (updatedSolution.length > 0) {
         const opponentMoveStr = updatedSolution[0];
-        const from = opponentMoveStr.slice(0, 2);
-        const to = opponentMoveStr.slice(2, 4);
-        const promotion =
-          opponentMoveStr.length > 4 ? opponentMoveStr[4] : undefined;
-
-        const opponentMove = newGame.move({ from, to, promotion });
-        if (opponentMove) updatedSolution = updatedSolution.slice(1);
-      }
-
-      setSolution(updatedSolution);
-      setGame(newGame);
-
-      if (updatedSolution.length === 0) {
+        setTimeout(() => {
+          const from = opponentMoveStr.slice(0, 2);
+          const to = opponentMoveStr.slice(2, 4);
+          const promotion = opponentMoveStr.length > 4 ? opponentMoveStr[4] : undefined;
+  
+          const opponentGame = new Chess(newGame.fen());
+          const opponentMove = opponentGame.move({ from, to, promotion });
+  
+          if (opponentMove) {
+            setGame(opponentGame);
+            setSolution((prev) => prev.slice(1));
+  
+            // Play opponent move sound
+            if (opponentMove.captured) {
+              captureSound?.play();
+            } else {
+              moveSound?.play();
+            }
+  
+            if (updatedSolution.length === 1) onPuzzleSolved();
+          }
+        }, 300); // 2-second delay
+      } else {
         onPuzzleSolved();
       }
+  
       return true;
     }
-
-    // ❌ Wrong move → revert
-    setGame(new Chess(prevFen));
-    return false;
+  
+    return false; // incorrect move, no sound
   }
+  
+  
 
   function onSquareClick({ square, piece }: SquareHandlerArgs) {
     if (!moveFrom && piece) {

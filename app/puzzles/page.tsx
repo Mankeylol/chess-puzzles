@@ -6,6 +6,9 @@ import Board from "../components/Chessboard";
 import { useRouter } from "next/navigation";
 import { useMiniKit } from "@coinbase/onchainkit/minikit";
 import { Timer, CheckCheck } from "lucide-react";
+import { Chess } from "chess.js";
+
+
 
 type Puzzle = {
   pgn: string;
@@ -25,6 +28,8 @@ export default function PuzzlesPage() {
   const { context } = useMiniKit();
   const router = useRouter();
   const fid = "123"; // context?.user?.fid;
+
+  
 
   async function fetchPuzzle(): Promise<Puzzle> {
     const res = await fetch(`/api/getPuzzles?difficulty=easiest`);
@@ -141,8 +146,17 @@ export default function PuzzlesPage() {
               <CheckCheck size={20} /> {solvedCount}
             </span>
           </div>
-
-          <div className="w-full max-w-[80vmin] aspect-square">
+  
+          <div className="mb-4 text-xl font-bold">
+            {(() => {
+              const game = new Chess();
+              game.loadPgn(currentPuzzle.pgn);
+              return game.turn() === "w" ? "White" : "Black";
+            })()}{" "}
+            to move
+          </div>
+  
+          <div className="w-full max-w-[90vmin] aspect-square">
             <Board puzzle={currentPuzzle} onPuzzleSolved={handlePuzzleSolved} />
           </div>
         </>
@@ -150,5 +164,5 @@ export default function PuzzlesPage() {
         <div className="text-xl">Loading puzzle...</div>
       )}
     </div>
-  );
+  );  
 }
