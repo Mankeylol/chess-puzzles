@@ -15,8 +15,10 @@ datasource db {
 }
 
 model UserScore {
-  id        String @id @default(auto()) @map("_id") @db.ObjectId
-  fid       String @unique
-  score     Int    @default(0)
-  highScore Int    @default(0)
+  id          String @id @default(auto()) @map("_id") @db.ObjectId
+  username    String
+  fid         String @unique
+  score       Int    @default(0)
+  highScore   Int    @default(0)
+  gamesPlayed Int    @default(0)
 }

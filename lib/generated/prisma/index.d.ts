@@ -825,32 +825,40 @@ export namespace Prisma {
   export type UserScoreAvgAggregateOutputType = {
     score: number | null
     highScore: number | null
+    gamesPlayed: number | null
   }
 
   export type UserScoreSumAggregateOutputType = {
     score: number | null
     highScore: number | null
+    gamesPlayed: number | null
   }
 
   export type UserScoreMinAggregateOutputType = {
     id: string | null
+    username: string | null
     fid: string | null
     score: number | null
     highScore: number | null
+    gamesPlayed: number | null
   }
 
   export type UserScoreMaxAggregateOutputType = {
     id: string | null
+    username: string | null
     fid: string | null
     score: number | null
     highScore: number | null
+    gamesPlayed: number | null
   }
 
   export type UserScoreCountAggregateOutputType = {
     id: number
+    username: number
     fid: number
     score: number
     highScore: number
+    gamesPlayed: number
     _all: number
   }
 
@@ -858,32 +866,40 @@ export namespace Prisma {
   export type UserScoreAvgAggregateInputType = {
     score?: true
     highScore?: true
+    gamesPlayed?: true
   }
 
   export type UserScoreSumAggregateInputType = {
     score?: true
     highScore?: true
+    gamesPlayed?: true
   }
 
   export type UserScoreMinAggregateInputType = {
     id?: true
+    username?: true
     fid?: true
     score?: true
     highScore?: true
+    gamesPlayed?: true
   }
 
   export type UserScoreMaxAggregateInputType = {
     id?: true
+    username?: true
     fid?: true
     score?: true
     highScore?: true
+    gamesPlayed?: true
   }
 
   export type UserScoreCountAggregateInputType = {
     id?: true
+    username?: true
     fid?: true
     score?: true
     highScore?: true
+    gamesPlayed?: true
     _all?: true
   }
 
@@ -975,9 +991,11 @@ export namespace Prisma {
 
   export type UserScoreGroupByOutputType = {
     id: string
+    username: string
     fid: string
     score: number
     highScore: number
+    gamesPlayed: number
     _count: UserScoreCountAggregateOutputType | null
     _avg: UserScoreAvgAggregateOutputType | null
     _sum: UserScoreSumAggregateOutputType | null
@@ -1001,30 +1019,36 @@ export namespace Prisma {
 
   export type UserScoreSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
+    username?: boolean
     fid?: boolean
     score?: boolean
     highScore?: boolean
+    gamesPlayed?: boolean
   }, ExtArgs["result"]["userScore"]>
 
 
 
   export type UserScoreSelectScalar = {
     id?: boolean
+    username?: boolean
     fid?: boolean
     score?: boolean
     highScore?: boolean
+    gamesPlayed?: boolean
   }
 
-  export type UserScoreOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "fid" | "score" | "highScore", ExtArgs["result"]["userScore"]>
+  export type UserScoreOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "username" | "fid" | "score" | "highScore" | "gamesPlayed", ExtArgs["result"]["userScore"]>
 
   export type $UserScorePayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     name: "UserScore"
     objects: {}
     scalars: $Extensions.GetPayloadResult<{
       id: string
+      username: string
       fid: string
       score: number
       highScore: number
+      gamesPlayed: number
     }, ExtArgs["result"]["userScore"]>
     composites: {}
   }
@@ -1418,9 +1442,11 @@ export namespace Prisma {
    */
   interface UserScoreFieldRefs {
     readonly id: FieldRef<"UserScore", 'String'>
+    readonly username: FieldRef<"UserScore", 'String'>
     readonly fid: FieldRef<"UserScore", 'String'>
     readonly score: FieldRef<"UserScore", 'Int'>
     readonly highScore: FieldRef<"UserScore", 'Int'>
+    readonly gamesPlayed: FieldRef<"UserScore", 'Int'>
   }
     
 
@@ -1775,9 +1801,11 @@ export namespace Prisma {
 
   export const UserScoreScalarFieldEnum: {
     id: 'id',
+    username: 'username',
     fid: 'fid',
     score: 'score',
-    highScore: 'highScore'
+    highScore: 'highScore',
+    gamesPlayed: 'gamesPlayed'
   };
 
   export type UserScoreScalarFieldEnum = (typeof UserScoreScalarFieldEnum)[keyof typeof UserScoreScalarFieldEnum]
@@ -1854,16 +1882,20 @@ export namespace Prisma {
     OR?: UserScoreWhereInput[]
     NOT?: UserScoreWhereInput | UserScoreWhereInput[]
     id?: StringFilter<"UserScore"> | string
+    username?: StringFilter<"UserScore"> | string
     fid?: StringFilter<"UserScore"> | string
     score?: IntFilter<"UserScore"> | number
     highScore?: IntFilter<"UserScore"> | number
+    gamesPlayed?: IntFilter<"UserScore"> | number
   }
 
   export type UserScoreOrderByWithRelationInput = {
     id?: SortOrder
+    username?: SortOrder
     fid?: SortOrder
     score?: SortOrder
     highScore?: SortOrder
+    gamesPlayed?: SortOrder
   }
 
   export type UserScoreWhereUniqueInput = Prisma.AtLeast<{
@@ -1872,15 +1904,19 @@ export namespace Prisma {
     AND?: UserScoreWhereInput | UserScoreWhereInput[]
     OR?: UserScoreWhereInput[]
     NOT?: UserScoreWhereInput | UserScoreWhereInput[]
+    username?: StringFilter<"UserScore"> | string
     score?: IntFilter<"UserScore"> | number
     highScore?: IntFilter<"UserScore"> | number
+    gamesPlayed?: IntFilter<"UserScore"> | number
   }, "id" | "fid">
 
   export type UserScoreOrderByWithAggregationInput = {
     id?: SortOrder
+    username?: SortOrder
     fid?: SortOrder
     score?: SortOrder
     highScore?: SortOrder
+    gamesPlayed?: SortOrder
     _count?: UserScoreCountOrderByAggregateInput
     _avg?: UserScoreAvgOrderByAggregateInput
     _max?: UserScoreMaxOrderByAggregateInput
@@ -1893,54 +1929,70 @@ export namespace Prisma {
     OR?: UserScoreScalarWhereWithAggregatesInput[]
     NOT?: UserScoreScalarWhereWithAggregatesInput | UserScoreScalarWhereWithAggregatesInput[]
     id?: StringWithAggregatesFilter<"UserScore"> | string
+    username?: StringWithAggregatesFilter<"UserScore"> | string
     fid?: StringWithAggregatesFilter<"UserScore"> | string
     score?: IntWithAggregatesFilter<"UserScore"> | number
     highScore?: IntWithAggregatesFilter<"UserScore"> | number
+    gamesPlayed?: IntWithAggregatesFilter<"UserScore"> | number
   }
 
   export type UserScoreCreateInput = {
     id?: string
+    username: string
     fid: string
     score?: number
     highScore?: number
+    gamesPlayed?: number
   }
 
   export type UserScoreUncheckedCreateInput = {
     id?: string
+    username: string
     fid: string
     score?: number
     highScore?: number
+    gamesPlayed?: number
   }
 
   export type UserScoreUpdateInput = {
+    username?: StringFieldUpdateOperationsInput | string
     fid?: StringFieldUpdateOperationsInput | string
     score?: IntFieldUpdateOperationsInput | number
     highScore?: IntFieldUpdateOperationsInput | number
+    gamesPlayed?: IntFieldUpdateOperationsInput | number
   }
 
   export type UserScoreUncheckedUpdateInput = {
+    username?: StringFieldUpdateOperationsInput | string
     fid?: StringFieldUpdateOperationsInput | string
     score?: IntFieldUpdateOperationsInput | number
     highScore?: IntFieldUpdateOperationsInput | number
+    gamesPlayed?: IntFieldUpdateOperationsInput | number
   }
 
   export type UserScoreCreateManyInput = {
     id?: string
+    username: string
     fid: string
     score?: number
     highScore?: number
+    gamesPlayed?: number
   }
 
   export type UserScoreUpdateManyMutationInput = {
+    username?: StringFieldUpdateOperationsInput | string
     fid?: StringFieldUpdateOperationsInput | string
     score?: IntFieldUpdateOperationsInput | number
     highScore?: IntFieldUpdateOperationsInput | number
+    gamesPlayed?: IntFieldUpdateOperationsInput | number
   }
 
   export type UserScoreUncheckedUpdateManyInput = {
+    username?: StringFieldUpdateOperationsInput | string
     fid?: StringFieldUpdateOperationsInput | string
     score?: IntFieldUpdateOperationsInput | number
     highScore?: IntFieldUpdateOperationsInput | number
+    gamesPlayed?: IntFieldUpdateOperationsInput | number
   }
 
   export type StringFilter<$PrismaModel = never> = {
@@ -1971,33 +2023,41 @@ export namespace Prisma {
 
   export type UserScoreCountOrderByAggregateInput = {
     id?: SortOrder
+    username?: SortOrder
     fid?: SortOrder
     score?: SortOrder
     highScore?: SortOrder
+    gamesPlayed?: SortOrder
   }
 
   export type UserScoreAvgOrderByAggregateInput = {
     score?: SortOrder
     highScore?: SortOrder
+    gamesPlayed?: SortOrder
   }
 
   export type UserScoreMaxOrderByAggregateInput = {
     id?: SortOrder
+    username?: SortOrder
     fid?: SortOrder
     score?: SortOrder
     highScore?: SortOrder
+    gamesPlayed?: SortOrder
   }
 
   export type UserScoreMinOrderByAggregateInput = {
     id?: SortOrder
+    username?: SortOrder
     fid?: SortOrder
     score?: SortOrder
     highScore?: SortOrder
+    gamesPlayed?: SortOrder
   }
 
   export type UserScoreSumOrderByAggregateInput = {
     score?: SortOrder
     highScore?: SortOrder
+    gamesPlayed?: SortOrder
   }
 
   export type StringWithAggregatesFilter<$PrismaModel = never> = {

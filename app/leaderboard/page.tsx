@@ -18,7 +18,7 @@ export default function Leaderboard() {
             {users.map((user: any) => (
                 <div key={user.fid}>
                     <p>{user.username}</p>
-                    <p>{user.score}</p>
+                    <p>{user.highScore}</p>
                 </div>
             ))}
         </div>

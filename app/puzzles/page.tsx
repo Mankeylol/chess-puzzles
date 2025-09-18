@@ -27,7 +27,8 @@ export default function PuzzlesPage() {
 
   const { context } = useMiniKit();
   const router = useRouter();
-  const fid = context?.user?.fid?.toString();
+  const fid = context?.user?.fid?.toString() || "124";
+  const username =  context?.user?.username || "fallback"
 
   
 
@@ -69,7 +70,7 @@ export default function PuzzlesPage() {
       const res = await fetch("/api/data", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ fid: fid, scoreToAdd: solvedCount }),
+        body: JSON.stringify({ fid: fid, scoreToAdd: solvedCount, username: username }),
       });
 
       if (!res.ok) throw new Error("Failed to update score");

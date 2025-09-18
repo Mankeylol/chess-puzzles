@@ -14,7 +14,7 @@ export async function GET(req: Request) {
 
     return NextResponse.json({
       fid,
-      score: userScore ? userScore.score : 0,
+      score: userScore ? userScore.highScore : 0,
     });
   } catch (error) {
     console.error("Error fetching user score:", error);
@@ -27,7 +27,7 @@ export async function GET(req: Request) {
 
 export async function POST(req: Request) {
   try {
-    const { fid, scoreToAdd } = await req.json();
+    const { fid, scoreToAdd, gamesPlayed, username } = await req.json();
 
     if (!fid || typeof scoreToAdd !== "number") {
       return NextResponse.json(
@@ -49,12 +49,15 @@ export async function POST(req: Request) {
         score: { increment: scoreToAdd },
         ...(shouldUpdateHighScore && {
           highScore: { set: scoreToAdd },
+          gamesPlayed: { increment: 1 },
         }),
       },
       create: {
         fid,
         score: scoreToAdd,
         highScore: scoreToAdd,
+        gamesPlayed: 1,
+        username: username,
       },
     });
 
@@ -63,6 +66,8 @@ export async function POST(req: Request) {
       fid,
       totalScore: updatedUser.score,
       highScore: updatedUser.highScore,
+      gamesPlayed: updatedUser.gamesPlayed,
+      username: updatedUser.username,
     });
   } catch (error) {
     console.error("Error updating user score:", error);
