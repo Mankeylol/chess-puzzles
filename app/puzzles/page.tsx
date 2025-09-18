@@ -7,6 +7,7 @@ import { useRouter } from "next/navigation";
 import { useMiniKit } from "@coinbase/onchainkit/minikit";
 import { Timer, CheckCheck } from "lucide-react";
 import { Chess } from "chess.js";
+import sdk from "@farcaster/frame-sdk";
 
 
 
@@ -41,6 +42,7 @@ export default function PuzzlesPage() {
     // Preload first two puzzles before game starts
     fetchPuzzle().then(setCurrentPuzzle);
     fetchPuzzle().then(setNextPuzzle);
+    sdk.actions.ready({ disableNativeGestures: true });
   }, []);
 
   useEffect(() => {
