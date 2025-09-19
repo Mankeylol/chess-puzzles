@@ -15,6 +15,9 @@ export async function GET(req: Request) {
     return NextResponse.json({
       fid,
       score: userScore ? userScore.highScore : 0,
+      gamesPlayed: userScore ? userScore.gamesPlayed : 0,
+      username: userScore ? userScore.username : "",
+      totalScore: userScore ? userScore.score : 0,
     });
   } catch (error) {
     console.error("Error fetching user score:", error);
