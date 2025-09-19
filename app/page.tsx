@@ -14,7 +14,7 @@ export default function App() {
 
   const router = useRouter();
   const addFrame = useAddFrame();
-  const openUrl = useOpenUrl();
+
 
   useEffect(() => {
     if (!isFrameReady) {
