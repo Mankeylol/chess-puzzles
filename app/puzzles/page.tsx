@@ -126,7 +126,8 @@ export default function PuzzlesPage() {
                 composeCast({
                   text: `I solved ${solvedCount} puzzles — think you can beat me?`,
                   embeds: [
-                    `${window.location.origin}/api/og?username=${encodeURIComponent(username!)}&score=${solvedCount}`
+                    //`${window.location.origin}/api/og?username=${encodeURIComponent(username!)}&score=${solvedCount}`
+                    "https://chess-puzzles-kohl.vercel.app/"
                   ],
                 })
               }
