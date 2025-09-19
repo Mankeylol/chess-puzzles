@@ -50,9 +50,9 @@ export async function POST(req: Request) {
       where: { fid },
       update: {
         score: { increment: scoreToAdd },
+        gamesPlayed: { increment: 1 },
         ...(shouldUpdateHighScore && {
           highScore: { set: scoreToAdd },
-          gamesPlayed: { increment: 1 },
         }),
       },
       create: {
