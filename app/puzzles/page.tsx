@@ -102,15 +102,6 @@ export default function PuzzlesPage() {
     fetchPuzzle().then(setNextPuzzle);
   }
 
-  function handlePlayAgain() {
-    setSolvedCount(0);
-    setTimeLeft(60);
-    setCountdown(3);
-    setGameOver(false);
-    setHasPosted(false);
-    setGameStarted(false);
-  }
-
   useEffect(() => {
     if (countdown > 0) {
       const timer = setTimeout(() => setCountdown((c) => c - 1), 1000);
@@ -133,8 +124,8 @@ export default function PuzzlesPage() {
           <div className="flex gap-4">
             <button
               onClick={() =>composeCast({
-                text: `I solved ${solvedCount} puzzles, think you got what it takes to beat me?`
-
+                text: `I solved ${solvedCount} puzzles, think you got what it takes to beat me?`,
+                embeds: ["/og?username=" + username + "&score=" + solvedCount],
               })}
               className="px-4 py-2 bg-green-600 text-white rounded-lg"
             >
