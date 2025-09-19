@@ -19,9 +19,14 @@ export default function App() {
   useEffect(() => {
     if (!isFrameReady) {
       setFrameReady({disableNativeGestures: true});
-      addFrame()  
     }
   }, [setFrameReady, isFrameReady]);
+
+  useEffect(() => {
+    if (isFrameReady) {
+      addFrame();
+    }
+  }, [isFrameReady, addFrame]);
   const username = context?.user?.username;
   const fid = context?.user?.fid?.toString();
 
