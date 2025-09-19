@@ -11,7 +11,7 @@ export default function Profile() {
     const [gamesPlayed, setGamesPlayed] = useState(0);
     const [highScore, setHighScore] = useState(0);
     const getUserScore = async (fid: string) => {
-        const response = await fetch(`/api/data?fid=${fid}`);
+        const response = await fetch(`/api/data?fid=${fid}`, { next: { revalidate: 60 } });
         const data = await response.json();
         console.log(data);
         setScore(data.totalScore);

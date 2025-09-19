@@ -4,10 +4,11 @@
 import { useEffect, useState } from "react";
 import Board from "../components/Chessboard";
 import { useRouter } from "next/navigation";
-import { useMiniKit } from "@coinbase/onchainkit/minikit";
-import { Timer, CheckCheck } from "lucide-react";
+import { useMiniKit, useComposeCast } from "@coinbase/onchainkit/minikit";
+import { Timer, CheckCheck, FlagTriangleRight } from "lucide-react";
 import { Chess } from "chess.js";
 import sdk from "@farcaster/frame-sdk";
+
 
 
 
@@ -29,12 +30,16 @@ export default function PuzzlesPage() {
   const { context } = useMiniKit();
   const router = useRouter();
   const fid = context?.user?.fid?.toString() || "124";
-  const username =  context?.user?.username || "fallback"
+  const username = context?.user?.username || "fallback"
+
+  const { composeCast } = useComposeCast();
 
   
 
+
+
   async function fetchPuzzle(): Promise<Puzzle> {
-    const res = await fetch(`/api/getPuzzles?difficulty=easiest`);
+    const res = await fetch(`/api/getPuzzles?difficulty=easiest`, { next: { revalidate: 60 } });
     return res.json();
   }
 
@@ -92,6 +97,11 @@ export default function PuzzlesPage() {
     fetchPuzzle().then(setNextPuzzle);
   }
 
+  function handlePuzzleSkipped() {
+    setCurrentPuzzle(nextPuzzle);
+    fetchPuzzle().then(setNextPuzzle);
+  }
+
   function handlePlayAgain() {
     setSolvedCount(0);
     setTimeLeft(60);
@@ -122,10 +132,13 @@ export default function PuzzlesPage() {
           </p>
           <div className="flex gap-4">
             <button
-              onClick={handlePlayAgain}
+              onClick={() =>composeCast({
+                text: `I solved ${solvedCount} puzzles, think you got what it takes to beat me?`
+
+              })}
               className="px-4 py-2 bg-green-600 text-white rounded-lg"
             >
-              Play Again
+              Share on Farcaster
             </button>
             <button
               onClick={() => router.push("/")}
@@ -137,20 +150,7 @@ export default function PuzzlesPage() {
         </div>
       ) : currentPuzzle ? (
         <>
-          <div className="absolute top-4 left-4 flex items-center gap-6 bg-black/60 text-white px-4 py-2 rounded-lg shadow-md">
-            <span
-              className={`font-mono text-lg ${
-                timeLeft <= 10 ? "text-red-400 animate-pulse" : ""
-              }`}
-            >
-              <Timer size={20} /> {timeLeft}s
-            </span>
-            <span className="font-mono text-lg">
-              <CheckCheck size={20} /> {solvedCount}
-            </span>
-          </div>
-  
-          <div className="mb-4 text-xl font-bold">
+        <div className="mb-[100px] mt-[-100px] text-xl font-bold text-[#EBECD0]">
             {(() => {
               const game = new Chess();
               game.loadPgn(currentPuzzle.pgn);
@@ -158,14 +158,37 @@ export default function PuzzlesPage() {
             })()}{" "}
             to move
           </div>
-  
-          <div className="w-full max-w-[90vmin] aspect-square">
+          <div className=" w-[90%] flex items-center justify-between  text-white px-4 py-2 rounded-lg shadow-md mt-[-50px]">
+            <span
+              className={`flex gap-2 font-mono text-lg ${timeLeft <= 10 ? "text-red-400 animate-pulse" : ""
+                }`}
+            >
+              <Timer size={20} /> {timeLeft}s
+            </span>
+
+            <span className="font-mono text-lg flex gap-2">
+              <FlagTriangleRight size={20} /> {solvedCount}
+            </span>
+          </div>
+
+          <div className="h-2 w-[90%] bg-[#526144] rounded-full overflow-hidden">
+            <div
+              className=" h-full bg-[#739552] transition-all duration-1000 ease-linear"
+              style={{ width: `${(timeLeft / 60) * 100}%` }}
+            />
+          </div>
+
+          <div className="w-full max-w-[90vmin] aspect-square mt-3">
             <Board puzzle={currentPuzzle} onPuzzleSolved={handlePuzzleSolved} />
+          </div>
+          <div className="flex justify-between w-[90%] mt-5">
+            <div className="text-[#4B824B]">{username}</div>
+            <button onClick={handlePuzzleSkipped} className="px-4 py-2 bg-[#4B824B] text-white rounded-lg">Skip</button>
           </div>
         </>
       ) : (
         <div className="text-xl">Loading puzzle...</div>
       )}
     </div>
-  );  
+  );
 }

@@ -52,7 +52,7 @@ export default function App() {
       </div>
       <p className="text-[12px] text-[#EBECD0] mt-20">HighScore: {score}</p>
       <div className="flex justify-center mt-2 gap-2">
-        <button className=" bg-[#4b824b] text-white px-4 py-2 rounded w-32">Check Stats</button>
+        <button onClick={() => router.push("/profile")} className=" bg-gray-700 text-white px-4 py-2 rounded w-32">Check Stats</button>
         <button onClick={() => router.push("/puzzles")} className=" bg-[#4b824b] text-white px-4 py-2 rounded w-32">Play</button>
       </div>
       <Navbar/>

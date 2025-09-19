@@ -5,7 +5,7 @@ export async function GET(req: Request) {
     try {
     const users = await prisma.userScore.findMany({
         orderBy: { score: "desc" },
-        take: 2,
+        take: 10,
     });
     return NextResponse.json(users);    
     } catch (error) {
