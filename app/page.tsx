@@ -18,11 +18,11 @@ export default function App() {
 
   useEffect(() => {
     if (!isFrameReady) {
-      setFrameReady();
+      setFrameReady({disableNativeGestures: true});
     }
   }, [setFrameReady, isFrameReady]);
   const username = context?.user?.username;
-  const fid = context?.user?.fid?.toString() ||"124";
+  const fid = context?.user?.fid?.toString();
 
 
   const [score, setScore] = useState(0);

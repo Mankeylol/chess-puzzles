@@ -29,12 +29,12 @@ export default function PuzzlesPage() {
 
   const { context } = useMiniKit();
   const router = useRouter();
-  const fid = context?.user?.fid?.toString() || "124";
-  const username = context?.user?.username || "fallback"
+  const fid = context?.user?.fid?.toString();
+  const username = context?.user?.username;
 
   const { composeCast } = useComposeCast();
 
-  
+
 
 
 
@@ -47,7 +47,6 @@ export default function PuzzlesPage() {
     // Preload first two puzzles before game starts
     fetchPuzzle().then(setCurrentPuzzle);
     fetchPuzzle().then(setNextPuzzle);
-    sdk.actions.ready({ disableNativeGestures: true });
   }, []);
 
   useEffect(() => {
@@ -123,14 +122,19 @@ export default function PuzzlesPage() {
           </p>
           <div className="flex gap-4">
             <button
-              onClick={() =>composeCast({
-                text: `I solved ${solvedCount} puzzles, think you got what it takes to beat me?`,
-                embeds: ["/og?username=" + username + "&score=" + solvedCount],
-              })}
+              onClick={() =>
+                composeCast({
+                  text: `I solved ${solvedCount} puzzles — think you can beat me?`,
+                  embeds: [
+                    `${window.location.origin}/api/og?username=${encodeURIComponent(username!)}&score=${solvedCount}`
+                  ],
+                })
+              }
               className="px-4 py-2 bg-green-600 text-white rounded-lg"
             >
               Share on Farcaster
             </button>
+
             <button
               onClick={() => router.push("/")}
               className="px-4 py-2 bg-gray-700 text-white rounded-lg"
@@ -141,7 +145,7 @@ export default function PuzzlesPage() {
         </div>
       ) : currentPuzzle ? (
         <>
-        <div className="mb-[100px] mt-[-100px] text-xl font-bold text-[#EBECD0]">
+          <div className="mb-[100px] mt-[-100px] text-xl font-bold text-[#EBECD0]">
             {(() => {
               const game = new Chess();
               game.loadPgn(currentPuzzle.pgn);
