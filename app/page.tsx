@@ -51,7 +51,7 @@ export default function App() {
   return (
     <div className=" flex flex-col items-center min-h-screen p-4 mt-32">
       <div className="flex flex-col items-center gap-3">
-      <img src={context?.user?.pfpUrl || "hero.png" }  alt="hello" className="w-20 h-20 rounded-full border border-[#4B824B]" />
+      <img src={context?.user?.pfpUrl}  alt="hello" className="w-20 h-20 rounded-full border border-[#4B824B]" />
       <div className="flex flex-col items-center bg-[#1E1E1E] p-1 w-40 rounded-[12px]">
       <p className="text-[14px] text-[#4B824B]"> Hello {username}!</p>
       </div>
